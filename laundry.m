@@ -13,10 +13,12 @@ if isempty(dimension) %do row and col cleanup
     if iscell(dirty); %if cell clean up each matrix within cell
         for row = 1:size(dirty,1);
             for col = 1:size(dirty,2)
-                nanrows = nansum(isnan(dirty{row,col}),2) == size(dirty{row,col},2);
-                dirty{row,col}(nanrows,:) = [];
-                nancols = nansum(isnan(dirty{row,col}),1) == size(dirty{row,col},1);
-                dirty{row,col}(:,nancols) = [];
+                if ~isempty(dirty{row,col})
+                    nanrows = nansum(isnan(dirty{row,col}),2) == size(dirty{row,col},2);
+                    dirty{row,col}(nanrows,:) = [];
+                    nancols = nansum(isnan(dirty{row,col}),1) == size(dirty{row,col},1);
+                    dirty{row,col}(:,nancols) = [];
+                end
             end
         end
     else
