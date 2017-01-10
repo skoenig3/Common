@@ -1,5 +1,7 @@
 function [broken_ind]=findgaps(input_ind)
 % finds gaps (greater than 0) in between indeces in a vector
+%
+% rechecked for bugs by SDK on 1/5/2017
 
 gaps =find(abs(diff(input_ind)) > 1);
 broken_ind = zeros(length(gaps),50);

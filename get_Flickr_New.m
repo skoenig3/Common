@@ -42,8 +42,10 @@ else %otherwise go ahead and grab images
                 %https:// added 1/11/16
                 if strcmp(s(hind(k):hind(k)+6),'http://') || strcmp(s(hind(k):hind(k)+7),'https://')
                     firstquote=strfind(s(hind(k):end),'"');
-                    siteind{i}=s(hind(k):(firstquote(1)+hind(k)-2));
-                    i=i+1;
+                    if ~isempty(firstquote)
+                        siteind{i}=s(hind(k):(firstquote(1)+hind(k)-2));
+                        i=i+1;
+                    end
                 end
             end
         end

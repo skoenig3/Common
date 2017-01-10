@@ -1,4 +1,4 @@
-function [time_arr,event_arr,eog_arr,epp_arr, header,trialcount]  = get_ALLdata(name)
+function [time_arr,event_arr,eog_arr,epp_arr, header,trialcount]  = get_ALLdata(name) 
 
 % function to read the cortex datafile
 % and put the timecodes, eventcodes, trialheaders

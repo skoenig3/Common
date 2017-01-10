@@ -16,6 +16,8 @@ function [binnedmatrix] = bin2(matrix,xstep,ystep,upperlower,type)
 %       c) 'mean': calculates the mean of the values for each bin
 % OUTPUT
 %   1) Binned matrix!
+%
+% Code rechecked for bugs October 18, 2016 SDK
 
 if nargin < 5
     type = 'sum';
@@ -57,13 +59,13 @@ if strcmpi(type,'sum')
     for i = 1:length(ybin)-1
         for ii = 1:length(xbin)-1
             if i == 1 && ii == 1
-                binnedmatrix(i,ii) = sum(sum(matrix(ybin(1)+1:ybin(2),xbin(1)+1:xbin(2))));
+                binnedmatrix(i,ii) = nansum(nansum(matrix(ybin(1)+1:ybin(2),xbin(1)+1:xbin(2))));
             elseif i == 1
-                binnedmatrix(i,ii) = sum(sum(matrix(ybin(1)+1:ybin(2),xbin(ii)+1:xbin(ii+1))));
+                binnedmatrix(i,ii) = nansum(nansum(matrix(ybin(1)+1:ybin(2),xbin(ii)+1:xbin(ii+1))));
             elseif ii == 1
-                binnedmatrix(i,ii) = sum(sum(matrix(ybin(i)+1:ybin(i+1),xbin(1)+1:xbin(2))));
+                binnedmatrix(i,ii) = nansum(nansum(matrix(ybin(i)+1:ybin(i+1),xbin(1)+1:xbin(2))));
             else
-                binnedmatrix(i,ii) = sum(sum(matrix(ybin(i)+1:ybin(i+1),xbin(ii)+1:xbin(ii+1))));
+                binnedmatrix(i,ii) = nansum(nansum(matrix(ybin(i)+1:ybin(i+1),xbin(ii)+1:xbin(ii+1))));
             end
         end
     end
@@ -71,13 +73,17 @@ elseif strcmpi(type,'mode')
     for i = 1:length(ybin)-1
         for ii = 1:length(xbin)-1
             if i == 1 && ii == 1
-                binnedmatrix(i,ii) = mean2(matrix(ybin(1)+1:ybin(2),xbin(1)+1:xbin(2)));
+                bm = matrix(ybin(1)+1:ybin(2),xbin(1)+1:xbin(2));
+                binnedmatrix(i,ii) = mode(bm(:));
             elseif i == 1
-                binnedmatrix(i,ii) = mean2(matrix(ybin(1)+1:ybin(2),xbin(ii)+1:xbin(ii+1)));
+                bm = matrix(ybin(1)+1:ybin(2),xbin(ii)+1:xbin(ii+1));
+                binnedmatrix(i,ii) = mode(bm(:));
             elseif ii == 1
-                binnedmatrix(i,ii) = mean2(matrix(ybin(i)+1:ybin(i+1),xbin(1)+1:xbin(2)));
+                bm = matrix(ybin(i)+1:ybin(i+1),xbin(1)+1:xbin(2));
+                binnedmatrix(i,ii) = mode(bm(:));
             else
-                binnedmatrix(i,ii) = mean2(matrix(ybin(i)+1:ybin(i+1),xbin(ii)+1:xbin(ii+1)));
+                bm = matrix(ybin(i)+1:ybin(i+1),xbin(ii)+1:xbin(ii+1));
+                binnedmatrix(i,ii) = mode(bm(:));
             end
         end
     end
@@ -97,4 +103,5 @@ elseif strcmpi(type,'mean')
     end
 else
     error('Unknown type of binning')
+end
 end
