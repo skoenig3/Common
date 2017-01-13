@@ -26,11 +26,11 @@ function trialdata = analyze_sequence_trial(fixationstats,item_locations,fixwin,
 %       g) trialdata.cortexbreak: whether monkey broke then refixated
 
 if isrecording %then ephiz recording
-    valid_start = 501; %500 ms in ITI can start looking for fixatiosn in window
+    valid_start = 501+event_times(1); %500 ms in ITI can start looking for fixatiosn in window
     eye_data_start = event_times(1);%eye data is collected continuously
 elseif ~isrecording
     valid_start = 1001;%no eye data before this so can't look into ITI during cortex only sessions
-    eye_data_start = 0;%fixation times already account for this
+    eye_data_start = 1000;%fixation times already account for this
 else
     error('Recording status not stated')
 end
@@ -69,11 +69,9 @@ if size(fixations,2) < 4
     return %not enough fixations detected in this trail. it should happen only rarely
 end
 %---determine which fixation was for which item in the sequence---%
-fixation_number_on_item = NaN(1,4); %the ordinal fixation number on that item
-fixation_accuracy = NaN(1,4);%how close was the fixation to the center of the item
 for item = 1:4
     if item == 1
-        valid_window = [valid_start event_times(event_codes == item_on_off_codes(2,item))-eye_data_start];
+        valid_window = [valid_start event_times(event_codes == item_on_off_codes(2,item))]-eye_data_start;
     else
         valid_window = [event_times(event_codes == item_on_off_codes(2,item-1))...
             event_times(event_codes == item_on_off_codes(2,item))]-eye_data_start;
@@ -86,7 +84,7 @@ for item = 1:4
     %on (or trial start if 1st item) and that item turning off
     potential_fixes = find(fixationtimes(1,:) >= valid_window(1) & fixationtimes(1,:) < valid_window(2));
     if isempty(potential_fixes)
-        disp('No potentail fixation found for this item')
+        disp('No potential fixation found for this item')
     end
     
     %find valid/potentail fixation inside the fixation window
