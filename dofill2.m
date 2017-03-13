@@ -1,4 +1,4 @@
-function [hgt h hh ysmth y] = dofill2(x,y,color,dim,smval,bars,filloff,transp,fs,frate,useSEM)
+function [hgt, h, hh, ysmth, y] = dofill2(x,y,color,dim,smval,bars,filloff,transp,fs,frate,useSEM)
 %same as dofill but uses nandens3 which does smoothing trial by trial
 %instead of matrix which works better for variable length trials! Modified SDK 11/17/2016
 %dofill(x,y,color,dim,smval,bars,filloff)
@@ -22,10 +22,14 @@ if size(x,1) == 1;
     x = x';
 end
 
+hgt = [];
+h = [];
+hh = [];
+
 %nathan killian 100912
 if nargin < 11, useSEM = 1; end% use SEM or 95% conf intv
 if nargin < 10, frate = 0;  end%plot as firing rate
-if nargin < 9, fs = 1000;      end% sampling rate
+if nargin < 9, fs = 1000;   end% sampling rate
 if nargin < 8, transp = 1;  end
 if nargin < 7, filloff = 0; end
 if nargin < 6, bars = 0;    end
@@ -78,6 +82,10 @@ if useSEM
 else %95% conf intv
     semvals = 1.96*nanstd(y,0,dim)./sqrt(numtrls);
 end
+
+semvals = filtfilt(1/5*ones(1,5),1,semvals);%5 ms moving average to get rid of high frequency bumps
+%due to different trial lengths
+
 
 sempos = ysmth+semvals;
 semneg = ysmth-semvals;

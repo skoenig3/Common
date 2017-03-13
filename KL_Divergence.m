@@ -14,7 +14,7 @@ function [Distance] = KL_Divergence(Fixation_Matrix1,Fixation_Matrix2)
 % OUTPUT:
 %   1) Distance: the value of KL Divergence in bits. 
 
-f = fspecial('gaussian',[256,256],24); %~1 dva 2D gaussian filter for smoothing fixation locations
+f = fspecial('gaussian',[256 256],24); %~1 dva 2D gaussian filter for smoothing fixation locations
 
 binsize=25;%for binning fixation PDF into ~1dva bins. Makes calculating KL-divergence faster
 

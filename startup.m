@@ -1,0 +1,6 @@
+set(0,'defaultlinelinewidth',2)
+set(0,'defaultaxeslinewidth',2)
+set(0,'defaultpatchlinewidth',2)
+set(0,'DefaultAxesFontSize',12)
+set(0,'defaultAxesFontName', 'Myriad Pro')
+set(0,'defaultTextFontName', 'Myriad Pro')

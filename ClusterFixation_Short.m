@@ -81,7 +81,7 @@ for cndlop = 1:length(eyedat)
         vel = sqrt(velx.^2+vely.^2);
         accel = abs(diff(vel));
         angle = 180*atan2(vely,velx)/pi;
-        vel = vel(1:end-samprate*1000+4);
+        vel = vel(1:end-1);
         rot = zeros(1,length(xss)-samprate*1000);
         dist = zeros(1,length(xss)-samprate*1000);
         for a = 1:length(xss)-2;
@@ -109,7 +109,7 @@ for cndlop = 1:length(eyedat)
         end
         sil(sil > 0.9*max(sil)) = 1;
         numclusters = find(sil == max(sil));
-        T = kmeans(points,numclusters(end),'replicate',25);             
+         T = kmeans(points,numclusters(end),'replicate',25);
         rng = zeros(max(T),2*(size(points,2)-1));
         % determines fixation clusters by overlapping median values in velocity
         % and acceleration state space, here we DO NOT assume gaussian distributions

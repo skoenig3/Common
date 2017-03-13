@@ -1,106 +1,68 @@
-%% Old List Section
-%for fixations out->in vs out->out
-firing_rate_in_out = fix_locked_firing(fix_in_out == 1 | fix_in_out == 4,:);
-in_or_out = fix_in_out(fix_in_out == 1 | fix_in_out == 4);
-in_curve = nandens(firing_rate_in_out(in_or_out == 1,:),smval,'gauss',Fs,'nanflt');
-out_curve = nandens(firing_rate_in_out(in_or_out == 4,:),smval,'gauss',Fs,'nanflt');
-all_curves = NaN(numshuffs,twin1+twin2);
-parfor shuff = 1:numshuffs;
-    ind = randperm(length(in_or_out));
-    shuff_in_or_out = in_or_out(ind);
-    shuff_in_curve = nandens(firing_rate_in_out(shuff_in_or_out == 1,:),smval,'gauss',Fs,'nanflt');
-    shuff_out_curve = nandens(firing_rate_in_out(shuff_in_or_out == 4,:),smval,'gauss',Fs,'nanflt');
-    all_curves(shuff,:) = shuff_in_curve-shuff_out_curve;
-end
-list_95_curve{1,unit} = prctile(all_curves,95,1);
-sig_ind = find((in_curve-out_curve) > list_95_curve{1,unit});
+%% Test: ICA can only separate linearly mixed sources
+clc; clf; clear all; close all;
 
-y_list = in_curve;
-in_curve = in_curve-nanmean(in_curve(1:twin1));
-in_curve = in_curve/max(in_curve);
-[PKS,LOCS]= findpeaks(in_curve,'MinPeakWidth',40);
-if ~isempty(LOCS)
-    %remove peaks less than 1/2 the max
-    LOCS(PKS < 0.66) = [];
-    PKS(PKS < 0.66) = [];
-end
-if ~isempty(LOCS)
-    PKS = PKS(1);
-    LOCS = LOCS(1);
-end
+opt = 1; % Linear: 1; Nonlinear: 2; Linear Noisy: 3; Nonlinear Noisy: 4;
 
-if ~isempty(LOCS)
-    contextual_gain(1,unit) = LOCS; %location
-    contextual_gain(2,unit) = in_curve(LOCS); %peak firing rate
-end
+%% Create two signals
+A = sin(linspace(0,50, 1000)); % A
+B = cos(linspace(0,37, 1000)+5); % B
+C = sin(linspace(0,20, 1000)+10); % C
 
-%% Old Sequence Section
-imgy = size(place_field_matrix,1);
-%Determine if any of the items are inside the matrix or not?
-sequence_inside = zeros(2,4);
-for c = 1:4
-    for seq = 1:2
-        yloc = imgy-sequence_locations{seq}(2,c);
-        xloc = sequence_locations{seq}(1,c);
-        if place_field_matrix(yloc,xloc) == 1 %item is in field
-            %then check if item is on border of field, if yes don't
-            %count
-            if place_field_matrix(yloc-1,xloc) == 1&& place_field_matrix(yloc-1,xloc-1) == 1 &&...
-                    place_field_matrix(yloc-1,xloc+1) == 1 && place_field_matrix(yloc+1,xloc) == 1 && ...
-                    place_field_matrix(yloc+1,xloc-1) == 1 && place_field_matrix(yloc+1,xloc+1) == 1 && ...
-                    place_field_matrix(yloc,xloc+1) == 1 && place_field_matrix(yloc,xloc-1) == 1
-                sequence_inside(seq,c) =1;
-            else
-                sequence_inside(seq,c) = NaN; %don't want to use border for any category
-            end
-        end
-    end
-end
-
-
-%    %only want items that are out->out or out->in for comparison similar to
-%    %above
-%     nanify = [];
-%     for c = 2:4  %allow item 1 no matter what since eye position probably offscreen anyway
-%         for seq = 1:2
-%                if sequence_inside(seq,c-1) == 1
-%                    nanify = [nanify [seq; c]];
-%                end
-%         end
-%     end
-%
-%     for i = 1:size(nanify,2)
-%        sequence_inside(nanify(1,i),nanify(2,i)) = NaN;
-%     end
-
-if any(sequence_inside(:) == 1) && any(sequence_inside(:) == 0)
-    seq_in_out = [];
-    fixation_firing = [];
-    for c = 1:4
-        fixation_firing = [fixation_firing; sequence_fixation_locked_firing{c,unit}];
-        for seq = 1:2
-            if  sequence_inside(seq,c) == 1;
-                seq_in_out = [ seq_in_out ones(1,sum(which_sequence(trial_nums{c,unit}) == seq))];
-                %                 elseif isnan(sequence_inside(seq,c))
-                %                     seq_in_out = [ seq_in_out NaN(1,sum(which_sequence(trial_nums{c,unit}) == seq))];
-            else
-                seq_in_out = [ seq_in_out zeros(1,sum(which_sequence(trial_nums{c,unit}) == seq))];
-            end
-        end
-    end
-    in_out_sequence{unit} = seq_in_out;
+%% Mixture of linear signals
+if opt == 1
+    M1 = A-2*B+C; % mixing 1
+    M2 = 1.73*A+3.41*B-9.2*C; % mixing 2
+    M3 = 0.2*A+0.41*B-0.5*C; % mixing 3
     
-    in_curve = nandens(fixation_firing(seq_in_out == 1,:),smval,'gauss',Fs,'nanflt');
-    out_curve = nandens(fixation_firing(seq_in_out == 0,:),smval,'gauss',Fs,'nanflt');
-    all_curves = NaN(numshuffs,twin1+twin2);
-    parfor shuff = 1:numshuffs;
-        ind = randperm(length(seq_in_out));
-        shuff_in_or_out = seq_in_out(ind);
-        shuff_in_curve = nandens(fixation_firing(shuff_in_or_out == 1,:),smval,'gauss',Fs,'nanflt');
-        shuff_out_curve = nandens(fixation_firing(shuff_in_or_out == 0,:),smval,'gauss',Fs,'nanflt');
-        all_curves(shuff,:) = shuff_in_curve-shuff_out_curve;
-    end
-    sequence_95_curve{1,unit} = prctile(all_curves,97.5,1);
-    sequence_95_curve{2,unit} = prctile(all_curves,2.5,1);
-    seq_sig_ind = find((in_curve-out_curve) > sequence_95_curve{1,unit} | (in_curve-out_curve) < sequence_95_curve{2,unit});
+%% Mixture of nonlinear signals
+elseif opt == 2
+    M1 = A-2*B+C; % mixing 1
+    M2 = 1.73*A+3.41*B.^2-9.2*C; % mixing 2 B.^1.1
+    M3 = 0.2*A+0.41*B-0.5*C; % mixing 3 1000*C
+    
+%% Mixture of linear signals with white Gaussian noise
+elseif opt == 3
+    M1 = A-2*B+C+(0.2+0.1.*randn(1000,1))'; % mixing 1
+    M2 = 1.73*A+3.41*B-9.2*C+(0.1+0.05.*randn(1000,1))'; % mixing 2
+    M3 = 0.2*A+0.41*B-0.5*C-(0.01+0.1.*randn(1000,1))'; % mixing 3
+
+%% Mixture of nonlinear signals with white Gaussian noise
+elseif opt == 4
+    M1 = A-2*B+C+(0.2+0.1.*randn(1000,1))'; % mixing 1
+    M2 = 1.73*A+3.41*B.^2-9.2*C+(0.1+0.05.*randn(1000,1))'; % mixing 2 B.^1.1
+    M3 = 0.2*A+0.41*B-0.5*C-(0.01+0.1.*randn(1000,1))'; % mixing 3 1000*C
+    
 end
+
+%% Run fast ICA 4 times
+ICs = zeros(12,1000);
+for i = 1:4
+    % compute unminxing using fastICA
+    ICs((1+3*(i-1)):(1+3*(i-1))+2,:) = fastica([M1;M2;M3]);
+end
+
+%% Plot
+figure,
+subplot(3,6,1), plot(A, 'r'); % plot A
+subplot(3,6,7), plot(B, 'r'); % plot B
+subplot(3,6,13), plot(C, 'r'); % plot C
+
+subplot(3,6,2), plot(M1, 'g'); % plot mixing 1
+subplot(3,6,8), plot(M2, 'g'); % plot mixing 2
+subplot(3,6,14), plot(M3, 'g'); % plot mixing 3
+
+subplot(3,6,3), plot(ICs(1,:), 'r'); % plot IC 1
+subplot(3,6,9), plot(ICs(2,:), 'r'); % plot IC 2
+subplot(3,6,15), plot(ICs(3,:), 'r'); % plot IC 3
+
+subplot(3,6,4), plot(ICs(4,:), 'r'); % plot IC 1
+subplot(3,6,10), plot(ICs(5,:), 'r'); % plot IC 2
+subplot(3,6,16), plot(ICs(6,:), 'r'); % plot IC 3
+
+subplot(3,6,5), plot(ICs(7,:), 'r'); % plot IC 1
+subplot(3,6,11), plot(ICs(8,:), 'r'); % plot IC 2
+subplot(3,6,17), plot(ICs(9,:), 'r'); % plot IC 3
+
+subplot(3,6,6), plot(ICs(10,:), 'r'); % plot IC 1
+subplot(3,6,12), plot(ICs(11,:), 'r'); % plot IC 2
+subplot(3,6,18), plot(ICs(12,:), 'r'); % plot IC 3
