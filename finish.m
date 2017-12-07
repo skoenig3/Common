@@ -9,7 +9,7 @@
 %   $Revision: 1.4 $  $Date: 2000/06/01 16:19:26 $
 
 home = 'C:\Users\seth.koenig\Documents\MATLAB\';
-network = 'R:\Buffalo Lab\Seth\';
+network = 'Z:\Seth\';
 disp('Saving workspace data');
 save([home 'LastWorkSpace'])
 %%

@@ -77,9 +77,12 @@ if size(x,1)>1 && size(x,2)>1 % if you need to do a group plot
 	handles.bars = bar(x, 'edgecolor','k', 'linewidth', 2);
 	hold on
 	for i = 1:num2Plot
+        offset = handles.bars(i).XOffset;
+        barpos = handles.bars(i).XData;
 		%x =get(get(handles.bars(i),'children'), 'xdata'); %was this SDK 1/11/17 but doesn't appear to work with newere versions
-        x = bsxfun(@plus,handles.bars(i).XData, [handles.bars(i).XOffset]');
-% 		x = mean(x([1 3],:)); %also commented out
+        %x = bsxfun(@plus,handles.bars(i).XData, [handles.bars(i).XOffset]');
+        x = offset+barpos;
+ 		%x = mean(x([1 3],:)); %also commented out
 %       Now the recursive call!
 		errorb(x,y(:,i), e(:,i),'barwidth',1/(num2Plot),varargin{:}); %errorb(x,y(:,i), e(:,i),'barwidth',1/(4*num2Plot),varargin{:});
     end
