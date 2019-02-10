@@ -145,12 +145,12 @@ end
             
             %---Global Clustering---%
             sil = zeros(1,5); %determines the number of clusters by comparing the ratio
-            %of intercluster and intracluster distances, faster mod of silhouette
-            for numclusts = 2:5
+            %of intercluster and             for numclusts = 2:5
                 T = kmeans(points(1:10:end,2:4),numclusts,'replicate',5);
                 [silh] = InterVSIntraDist(points(1:10:end,2:4),T);
                 sil(numclusts) = mean(silh);
-            end
+            endintracluster distances, faster mod of silhouette
+
             sil(sil > 0.9*max(sil)) = 1;
             numclusters = find(sil == max(sil));
             T = kmeans(points,numclusters(end),'replicate',25);
@@ -245,7 +245,11 @@ end
             else
                 saccadetimes = [];
             end
-            [fixationtimes] = BehavioralIndex(fixationindexes);
+            if ~isempty(fixationindexes)
+                [fixationtimes] = BehavioralIndex(fixationindexes);
+            else
+                fixationtimes = [];
+            end
             tooshort = find(diff(fixationtimes,1) < 5); %potential accidental fixationtimes
             %  yes, I purposelfully do not remove these times from fixationtimes!
             notbehav = [];
@@ -259,7 +263,11 @@ end
                 notbehav = [notbehav saccadetimes(1,tooshort(ii)):saccadetimes(2,tooshort(ii))];
             end
             fixationindexes = sort([fixationindexes notbehav]);
-            [fixationtimes] = BehavioralIndex(fixationindexes);
+            if ~isempty(fixationindexes)
+                [fixationtimes] = BehavioralIndex(fixationindexes);
+            else
+                fixationtimes = [];
+            end
             fixationtimes(:,(diff(fixationtimes,1) < 25))= []; %25 ms duration threshold for fixations
             fixationindexes = [];
             for ii = 1:size(fixationtimes,2);
